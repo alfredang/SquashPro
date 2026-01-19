@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  MapPin, 
-  Calendar, 
-  User, 
-  Trophy, 
-  Menu, 
-  X, 
-  Trash2, 
+import {
+  MapPin,
+  Calendar,
+  User,
+  Trophy,
+  Menu,
+  X,
+  Trash2,
   CheckCircle,
   Dumbbell,
   MessageSquare,
   Sparkles,
   Search,
   Filter,
-  Users
+  Users,
+  LogIn,
+  LogOut
 } from 'lucide-react';
 import MapContainer from './components/MapContainer';
 import Rating from './components/Rating';
 import { getSquashCoachAdvice } from './services/geminiService';
 import { Player, Court, Booking, GeoLocation, Review } from './types';
+import { useAuth } from './contexts/AuthContext';
 
 // --- MOCK DATA ---
 const MOCK_COURTS: Court[] = [
@@ -60,6 +63,9 @@ const INITIAL_BOOKINGS: Booking[] = [
 ];
 
 const App: React.FC = () => {
+  // --- AUTH ---
+  const { user, profile, loading, signInWithGoogle, signOut } = useAuth();
+
   // --- STATE ---
   const [view, setView] = useState<'dashboard' | 'book' | 'find-match' | 'players' | 'profile'>('dashboard');
   // Default to Singapore coordinates
@@ -584,30 +590,64 @@ const App: React.FC = () => {
 
             {/* Desktop Nav */}
             <div className="hidden md:flex space-x-8 items-center">
-              <button 
+              <button
                 onClick={() => setView('dashboard')}
                 className={`${view === 'dashboard' ? 'text-emerald-600 border-emerald-600' : 'text-slate-500 border-transparent hover:text-slate-700'} border-b-2 px-1 pt-1 text-sm font-medium h-full transition-colors`}
               >
                 Dashboard
               </button>
-              <button 
+              <button
                 onClick={() => setView('find-match')}
                 className={`${view === 'find-match' ? 'text-emerald-600 border-emerald-600' : 'text-slate-500 border-transparent hover:text-slate-700'} border-b-2 px-1 pt-1 text-sm font-medium h-full transition-colors`}
               >
                 Find Match
               </button>
-              <button 
+              <button
                 onClick={() => setView('book')}
                 className={`${view === 'book' ? 'text-emerald-600 border-emerald-600' : 'text-slate-500 border-transparent hover:text-slate-700'} border-b-2 px-1 pt-1 text-sm font-medium h-full transition-colors`}
               >
                 Book Court
               </button>
-              <button 
+              <button
                 onClick={() => setView('players')}
                 className={`${view === 'players' ? 'text-emerald-600 border-emerald-600' : 'text-slate-500 border-transparent hover:text-slate-700'} border-b-2 px-1 pt-1 text-sm font-medium h-full transition-colors`}
               >
                 Players
               </button>
+
+              {/* Auth Section */}
+              <div className="ml-4 pl-4 border-l border-slate-200 flex items-center gap-3">
+                {loading ? (
+                  <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse"></div>
+                ) : user ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={profile?.avatar_url || user.user_metadata?.avatar_url || 'https://via.placeholder.com/32'}
+                        alt="Avatar"
+                        className="w-8 h-8 rounded-full border border-slate-200"
+                      />
+                      <span className="text-sm font-medium text-slate-700">
+                        {profile?.name || user.user_metadata?.name || 'Player'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={signOut}
+                      className="flex items-center gap-1 text-sm text-slate-500 hover:text-red-600 transition"
+                    >
+                      <LogOut size={16} />
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={signInWithGoogle}
+                    className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition"
+                  >
+                    <LogIn size={16} />
+                    Sign in with Google
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Mobile Menu Button */}
@@ -627,6 +667,44 @@ const App: React.FC = () => {
               <button onClick={() => { setView('find-match'); setIsMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Find Match</button>
               <button onClick={() => { setView('book'); setIsMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Book Court</button>
               <button onClick={() => { setView('players'); setIsMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Players</button>
+
+              {/* Mobile Auth */}
+              <div className="border-t border-slate-200 mt-2 pt-2">
+                {loading ? (
+                  <div className="px-3 py-2">
+                    <div className="w-full h-10 bg-slate-200 rounded animate-pulse"></div>
+                  </div>
+                ) : user ? (
+                  <div className="px-3 py-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={profile?.avatar_url || user.user_metadata?.avatar_url || 'https://via.placeholder.com/32'}
+                        alt="Avatar"
+                        className="w-8 h-8 rounded-full border border-slate-200"
+                      />
+                      <span className="text-sm font-medium text-slate-700">
+                        {profile?.name || user.user_metadata?.name || 'Player'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => { signOut(); setIsMobileMenuOpen(false); }}
+                      className="flex items-center gap-1 text-sm text-red-600 font-medium"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { signInWithGoogle(); setIsMobileMenuOpen(false); }}
+                    className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white px-3 py-2 rounded-md text-base font-medium mx-3"
+                    style={{ width: 'calc(100% - 24px)' }}
+                  >
+                    <LogIn size={18} />
+                    Sign in with Google
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
