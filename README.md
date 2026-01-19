@@ -2,6 +2,8 @@
 
 A comprehensive web application for squash players to book courts, find matches, rate opponents, and get AI-powered coaching tips.
 
+**Live Demo**: [https://squashpro.vercel.app](https://squashpro.vercel.app)
+
 ## Features
 
 - **Court Booking**: Book squash courts with an interactive map
