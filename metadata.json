@@ -1,0 +1,7 @@
+{
+  "name": "SquashPro Match Finder",
+  "description": "A comprehensive app for squash players to book courts, find matches, rate opponents, and get AI-powered coaching tips.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
